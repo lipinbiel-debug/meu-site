@@ -3,253 +3,329 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Player Musical</title>
-
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#6c5ce7">
+<title>Meu Player</title>
 
 <style>
 :root{
-    --cor1:#6c5ce7;
-    --cor2:#4834d4;
-    --texto:#ffffff;
-    --card:rgba(0,0,0,0.4);
+  --cor-principal:#6c63ff;
+  --cor-fundo:#111;
+  --cor-texto:#ffffff;
+  --fonte:'Arial';
 }
 
 body{
-    margin:0;
-    font-family: Arial;
-    background: linear-gradient(45deg,var(--cor1),var(--cor2));
-    background-size:400% 400%;
-    animation:fundo 12s infinite alternate;
-    color:var(--texto);
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
+  margin:0;
+  background:var(--cor-fundo);
+  color:var(--cor-texto);
+  font-family:var(--fonte);
+  transition:0.4s;
 }
 
-@keyframes fundo{
-    0%{background-position:left;}
-    100%{background-position:right;}
+/* LOADING */
+
+#loader{
+  position:fixed;
+  width:100%;
+  height:100vh;
+  background:#111;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  z-index:9999;
 }
 
-.menu{
-    position:absolute;
-    top:20px;
-    right:20px;
-    font-size:26px;
-    cursor:pointer;
+#logoApp{
+  width:150px;
+  border-radius:20px;
+  margin-bottom:20px;
 }
 
-.config{
-    display:none;
-    position:absolute;
-    top:60px;
-    right:20px;
-    width:260px;
-    background:var(--card);
-    padding:15px;
-    border-radius:15px;
-    backdrop-filter:blur(10px);
+.barra{
+  width:250px;
+  height:15px;
+  background:#333;
+  border-radius:20px;
+  overflow:hidden;
 }
 
-.config input,
-.config select{
-    width:100%;
-    margin-bottom:10px;
+.progresso{
+  height:100%;
+  width:0%;
+  background:var(--cor-principal);
+  transition:0.2s;
 }
 
-.player{
-    background:var(--card);
-    padding:20px;
-    border-radius:20px;
-    width:320px;
-    text-align:center;
-    backdrop-filter:blur(15px);
+#porcentagem{
+  margin-top:10px;
+  font-weight:bold;
 }
 
-img{
-    width:150px;
-    height:150px;
-    border-radius:12px;
-    object-fit:cover;
-    margin-bottom:10px;
+/* HEADER */
+
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:15px;
+  background:var(--cor-principal);
+}
+
+.menu-btn{
+  font-size:26px;
+  cursor:pointer;
+}
+
+/* CONTAINER */
+
+.container{
+  text-align:center;
+  padding:20px;
+}
+
+img.capa{
+  width:200px;
+  height:200px;
+  object-fit:cover;
+  border-radius:15px;
+  margin:20px 0;
+}
+
+input, select, button{
+  margin:10px;
+  padding:8px;
+  border-radius:8px;
+  border:none;
 }
 
 button{
-    background:var(--cor1);
-    border:none;
-    color:white;
-    padding:8px 15px;
-    border-radius:8px;
-    cursor:pointer;
-    margin:5px;
+  background:var(--cor-principal);
+  color:white;
+  cursor:pointer;
 }
 
-input[type="range"]{
-    width:100%;
+/* MENU LATERAL */
+
+#menu{
+  position:fixed;
+  right:-350px;
+  top:0;
+  width:350px;
+  height:100%;
+  background:#222;
+  padding:20px;
+  transition:0.4s;
+  overflow-y:auto;
 }
 
-.volume-container{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    margin-top:10px;
+#menu.ativo{
+  right:0;
+}
+
+.abas button{
+  width:100%;
+  margin:5px 0;
+}
+
+.aba-conteudo{
+  display:none;
+}
+
+.ativo-aba{
+  display:block;
+}
+
+ul{
+  list-style:none;
+  padding:0;
 }
 </style>
 </head>
 <body>
 
-<div class="menu" onclick="toggleConfig()">☰</div>
+<!-- LOADING -->
+<div id="loader">
+  <img src="https://via.placeholder.com/150" id="logoApp">
+  <div class="barra">
+    <div class="progresso"></div>
+  </div>
+  <p id="porcentagem">0%</p>
+</div>
 
-<div class="config" id="config">
-<h3>Configurações</h3>
+<header>
+<h2>🎵 Meu Player</h2>
+<div class="menu-btn" onclick="abrirMenu()">☰</div>
+</header>
 
-<label>Cor do Site</label>
+<div class="container">
+
+<input type="file" id="audioInput" accept="audio/*"><br>
+
+<img src="https://via.placeholder.com/200" class="capa" id="capa">
+
+<audio id="player" controls></audio><br>
+
+<label>🔊 Volume</label>
+<input type="range" min="0" max="1" step="0.01" id="volume">
+
+</div>
+
+<!-- MENU CONFIG -->
+<div id="menu">
+
+<h2>⚙ Configurações</h2>
+
+<div class="abas">
+<button onclick="trocarAba('visual')">🎨 Visual</button>
+<button onclick="trocarAba('playlist')">🎵 Playlist</button>
+<button onclick="trocarAba('tutorial')">📖 Tutorial + Suporte</button>
+</div>
+
+<!-- VISUAL -->
+<div id="visual" class="aba-conteudo ativo-aba">
+
+<h3>Cor Principal</h3>
 <input type="color" id="corPicker">
 
-<label>Fonte</label>
+<h3>Fonte</h3>
 <select id="fonteSelect">
 <option value="Arial">Arial</option>
 <option value="Verdana">Verdana</option>
-<option value="Georgia">Georgia</option>
 <option value="Courier New">Courier</option>
+<option value="Georgia">Georgia</option>
 </select>
 
-<label>Mostrar Capa</label>
-<select id="mostrarCapa">
-<option value="sim">Sim</option>
-<option value="nao">Não</option>
-</select>
-
-<label>Escolher Sua Própria Capa</label>
-<input type="file" accept="image/*" id="capaInput">
+<h3>Capa Personalizada</h3>
+<input type="file" id="capaUpload" accept="image/*">
 
 </div>
 
-<div class="player">
+<!-- PLAYLIST -->
+<div id="playlist" class="aba-conteudo">
 
-<img id="capa" src="https://via.placeholder.com/150">
+<h3>Adicionar Música</h3>
+<input type="text" id="nomeMusica" placeholder="Nome da música">
+<input type="file" id="musicaPlaylist" accept="audio/*">
+<button onclick="adicionarPlaylist()">Adicionar</button>
 
-<input type="file" accept="audio/*" id="musicaInput">
+<h3>Suas Músicas</h3>
+<ul id="listaPlaylist"></ul>
 
-<audio id="audio"></audio>
-
-<input type="range" id="progresso" value="0">
-
-<div>
-<button onclick="play()">▶</button>
-<button onclick="pause()">⏸</button>
 </div>
 
-<div class="volume-container">
-🔊
-<input type="range" id="volume" min="0" max="1" step="0.01">
+<!-- TUTORIAL -->
+<div id="tutorial" class="aba-conteudo">
+
+<h3>📖 Como usar</h3>
+<p>
+1️⃣ Escolha uma música.<br>
+2️⃣ Ajuste o volume.<br>
+3️⃣ Personalize no Visual.<br>
+4️⃣ Crie sua playlist.<br>
+</p>
+
+<h3>📧 Suporte</h3>
+<a href="mailto:lipinbiel@gmail.com">
+<button>Entrar em Contato</button>
+</a>
+
 </div>
 
 </div>
 
 <script>
 
-const audio = document.getElementById("audio");
-const progresso = document.getElementById("progresso");
+/* LOADING */
+let progresso = 0;
+const barra = document.querySelector(".progresso");
+const porcentagem = document.getElementById("porcentagem");
+const loader = document.getElementById("loader");
+
+function carregar(){
+  if(progresso < 100){
+    progresso++;
+    barra.style.width = progresso + "%";
+    porcentagem.innerText = progresso + "%";
+    setTimeout(carregar, 15);
+  } else {
+    loader.style.opacity="0";
+    setTimeout(()=> loader.style.display="none",500);
+  }
+}
+window.addEventListener("load", carregar);
+
+/* PLAYER */
+const player = document.getElementById("player");
+const audioInput = document.getElementById("audioInput");
 const volume = document.getElementById("volume");
 const capa = document.getElementById("capa");
-
-audio.volume = 0.5;
-volume.value = 0.5;
-
-function play(){ audio.play(); }
-function pause(){ audio.pause(); }
-
-document.getElementById("musicaInput").addEventListener("change", e=>{
-    const file = e.target.files[0];
-    if(file){
-        audio.src = URL.createObjectURL(file);
-        audio.play();
-    }
-});
-
-audio.addEventListener("timeupdate", ()=>{
-    progresso.value = (audio.currentTime / audio.duration) * 100;
-});
-
-progresso.addEventListener("input", ()=>{
-    audio.currentTime = (progresso.value / 100) * audio.duration;
-});
-
-volume.addEventListener("input", ()=>{
-    audio.volume = volume.value;
-    localStorage.setItem("volume", volume.value);
-});
-
-function toggleConfig(){
-    const c = document.getElementById("config");
-    c.style.display = c.style.display === "block" ? "none" : "block";
-}
-
-function escurecer(hex,percent){
-    let num=parseInt(hex.slice(1),16),
-    r=(num>>16)-percent,
-    g=((num>>8)&0x00FF)-percent,
-    b=(num&0x0000FF)-percent;
-    r=r<0?0:r;
-    g=g<0?0:g;
-    b=b<0?0:b;
-    return "#"+(b|(g<<8)|(r<<16)).toString(16).padStart(6,"0");
-}
-
 const corPicker = document.getElementById("corPicker");
-corPicker.addEventListener("input",()=>{
-    const cor = corPicker.value;
-    document.documentElement.style.setProperty("--cor1",cor);
-    document.documentElement.style.setProperty("--cor2",escurecer(cor,40));
-    localStorage.setItem("cor",cor);
-});
-
 const fonteSelect = document.getElementById("fonteSelect");
+const capaUpload = document.getElementById("capaUpload");
+const listaPlaylist = document.getElementById("listaPlaylist");
+
+audioInput.addEventListener("change", e=>{
+  const file = e.target.files[0];
+  if(file){
+    player.src = URL.createObjectURL(file);
+    player.play();
+  }
+});
+
+volume.addEventListener("input",()=>{
+  player.volume = volume.value;
+});
+
+corPicker.addEventListener("input",()=>{
+  document.documentElement.style.setProperty('--cor-principal', corPicker.value);
+});
+
 fonteSelect.addEventListener("change",()=>{
-    document.body.style.fontFamily = fonteSelect.value;
-    localStorage.setItem("fonte",fonteSelect.value);
+  document.documentElement.style.setProperty('--fonte', fonteSelect.value);
 });
 
-const mostrarCapa = document.getElementById("mostrarCapa");
-mostrarCapa.addEventListener("change",()=>{
-    capa.style.display = mostrarCapa.value==="sim"?"block":"none";
-    localStorage.setItem("mostrarCapa",mostrarCapa.value);
+capaUpload.addEventListener("change", e=>{
+  const file = e.target.files[0];
+  if(file){
+    capa.src = URL.createObjectURL(file);
+  }
 });
 
-document.getElementById("capaInput").addEventListener("change",e=>{
-    const file = e.target.files[0];
-    if(file){
-        capa.src = URL.createObjectURL(file);
-    }
-});
-
-window.onload = ()=>{
-    if(localStorage.getItem("cor")){
-        corPicker.value = localStorage.getItem("cor");
-        corPicker.dispatchEvent(new Event("input"));
-    }
-    if(localStorage.getItem("fonte")){
-        document.body.style.fontFamily = localStorage.getItem("fonte");
-        fonteSelect.value = localStorage.getItem("fonte");
-    }
-    if(localStorage.getItem("mostrarCapa")){
-        mostrarCapa.value = localStorage.getItem("mostrarCapa");
-        mostrarCapa.dispatchEvent(new Event("change"));
-    }
-    if(localStorage.getItem("volume")){
-        volume.value = localStorage.getItem("volume");
-        audio.volume = localStorage.getItem("volume");
-    }
-};
-
-if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js");
+/* MENU */
+function abrirMenu(){
+  document.getElementById("menu").classList.toggle("ativo");
 }
+
+function trocarAba(nome){
+  document.querySelectorAll(".aba-conteudo").forEach(a=>a.classList.remove("ativo-aba"));
+  document.getElementById(nome).classList.add("ativo-aba");
+}
+
+/* PLAYLIST */
+function adicionarPlaylist(){
+  const nome = document.getElementById("nomeMusica").value;
+  const file = document.getElementById("musicaPlaylist").files[0];
+
+  if(nome && file){
+    const src = URL.createObjectURL(file);
+    const li = document.createElement("li");
+    li.innerHTML = `
+      ${nome}
+      <button onclick="tocar('${src}')">▶</button>
+    `;
+    listaPlaylist.appendChild(li);
+    localStorage.setItem("playlist", listaPlaylist.innerHTML);
+  }
+}
+
+function tocar(src){
+  player.src = src;
+  player.play();
+}
+
+window.onload = function(){
+  listaPlaylist.innerHTML = localStorage.getItem("playlist") || "";
+};
 
 </script>
 
