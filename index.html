@@ -92,6 +92,12 @@ input[type="range"]{
     width:100%;
 }
 
+.volume-container{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:10px;
+}
 </style>
 </head>
 <body>
@@ -124,6 +130,7 @@ input[type="range"]{
 </div>
 
 <div class="player">
+
 <img id="capa" src="https://via.placeholder.com/150">
 
 <input type="file" accept="audio/*" id="musicaInput">
@@ -136,13 +143,23 @@ input[type="range"]{
 <button onclick="play()">▶</button>
 <button onclick="pause()">⏸</button>
 </div>
+
+<div class="volume-container">
+🔊
+<input type="range" id="volume" min="0" max="1" step="0.01">
+</div>
+
 </div>
 
 <script>
 
 const audio = document.getElementById("audio");
 const progresso = document.getElementById("progresso");
+const volume = document.getElementById("volume");
 const capa = document.getElementById("capa");
+
+audio.volume = 0.5;
+volume.value = 0.5;
 
 function play(){ audio.play(); }
 function pause(){ audio.pause(); }
@@ -161,6 +178,11 @@ audio.addEventListener("timeupdate", ()=>{
 
 progresso.addEventListener("input", ()=>{
     audio.currentTime = (progresso.value / 100) * audio.duration;
+});
+
+volume.addEventListener("input", ()=>{
+    audio.volume = volume.value;
+    localStorage.setItem("volume", volume.value);
 });
 
 function toggleConfig(){
@@ -218,6 +240,10 @@ window.onload = ()=>{
     if(localStorage.getItem("mostrarCapa")){
         mostrarCapa.value = localStorage.getItem("mostrarCapa");
         mostrarCapa.dispatchEvent(new Event("change"));
+    }
+    if(localStorage.getItem("volume")){
+        volume.value = localStorage.getItem("volume");
+        audio.volume = localStorage.getItem("volume");
     }
 };
 
