@@ -3,55 +3,85 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Player Musical</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#6c5ce7">
 
 <style>
 :root{
-    --cor-principal: #6c5ce7;
-    --cor-secundaria: #4b3fbf;
-    --cor-texto: #ffffff;
-    --cor-card: rgba(0,0,0,0.4);
+    --cor1:#6c5ce7;
+    --cor2:#4834d4;
+    --texto:#ffffff;
+    --card:rgba(0,0,0,0.4);
 }
 
 body{
     margin:0;
-    font-family: Arial, sans-serif;
-    background: linear-gradient(45deg,var(--cor-principal),var(--cor-secundaria));
-    background-size: 400% 400%;
-    animation: fundoAnimado 10s infinite alternate;
-    color: var(--cor-texto);
+    font-family: Arial;
+    background: linear-gradient(45deg,var(--cor1),var(--cor2));
+    background-size:400% 400%;
+    animation:fundo 12s infinite alternate;
+    color:var(--texto);
     display:flex;
     justify-content:center;
     align-items:center;
     height:100vh;
 }
 
-@keyframes fundoAnimado{
-    0%{background-position: left;}
-    100%{background-position: right;}
+@keyframes fundo{
+    0%{background-position:left;}
+    100%{background-position:right;}
+}
+
+.menu{
+    position:absolute;
+    top:20px;
+    right:20px;
+    font-size:26px;
+    cursor:pointer;
+}
+
+.config{
+    display:none;
+    position:absolute;
+    top:60px;
+    right:20px;
+    width:260px;
+    background:var(--card);
+    padding:15px;
+    border-radius:15px;
+    backdrop-filter:blur(10px);
+}
+
+.config input,
+.config select{
+    width:100%;
+    margin-bottom:10px;
 }
 
 .player{
-    background: var(--cor-card);
+    background:var(--card);
     padding:20px;
-    border-radius:15px;
-    text-align:center;
+    border-radius:20px;
     width:320px;
-    backdrop-filter: blur(10px);
+    text-align:center;
+    backdrop-filter:blur(15px);
 }
 
 img{
     width:150px;
     height:150px;
-    border-radius:10px;
+    border-radius:12px;
     object-fit:cover;
     margin-bottom:10px;
 }
 
 button{
-    background: var(--cor-principal);
+    background:var(--cor1);
     border:none;
-    color:var(--cor-texto);
+    color:white;
     padding:8px 15px;
     border-radius:8px;
     cursor:pointer;
@@ -62,30 +92,6 @@ input[type="range"]{
     width:100%;
 }
 
-.menu{
-    position:absolute;
-    top:20px;
-    right:20px;
-    font-size:25px;
-    cursor:pointer;
-}
-
-.config{
-    display:none;
-    position:absolute;
-    top:60px;
-    right:20px;
-    background:var(--cor-card);
-    padding:15px;
-    border-radius:10px;
-    width:250px;
-    backdrop-filter: blur(10px);
-}
-
-.config input, .config select{
-    width:100%;
-    margin-bottom:10px;
-}
 </style>
 </head>
 <body>
@@ -93,110 +99,132 @@ input[type="range"]{
 <div class="menu" onclick="toggleConfig()">☰</div>
 
 <div class="config" id="config">
-    <h3>Configurações</h3>
+<h3>Configurações</h3>
 
-    <label>Cor Principal:</label>
-    <input type="color" onchange="mudarCor(this.value)">
+<label>Cor do Site</label>
+<input type="color" id="corPicker">
 
-    <label>Fonte:</label>
-    <select onchange="mudarFonte(this.value)">
-        <option value="Arial">Arial</option>
-        <option value="Verdana">Verdana</option>
-        <option value="Courier New">Courier</option>
-        <option value="Georgia">Georgia</option>
-    </select>
+<label>Fonte</label>
+<select id="fonteSelect">
+<option value="Arial">Arial</option>
+<option value="Verdana">Verdana</option>
+<option value="Georgia">Georgia</option>
+<option value="Courier New">Courier</option>
+</select>
 
-    <label>Mostrar Capa Automática:</label>
-    <select onchange="toggleCapa(this.value)">
-        <option value="sim">Sim</option>
-        <option value="nao">Não</option>
-    </select>
+<label>Mostrar Capa</label>
+<select id="mostrarCapa">
+<option value="sim">Sim</option>
+<option value="nao">Não</option>
+</select>
 
-    <label>Usar Sua Própria Capa:</label>
-    <input type="file" accept="image/*" onchange="capaPersonalizada(event)">
+<label>Escolher Sua Própria Capa</label>
+<input type="file" accept="image/*" id="capaInput">
+
 </div>
 
 <div class="player">
-    <img id="capa" src="https://via.placeholder.com/150">
-    
-    <input type="file" accept="audio/*" onchange="carregarMusica(event)">
-    
-    <audio id="audio"></audio>
+<img id="capa" src="https://via.placeholder.com/150">
 
-    <input type="range" id="progresso" value="0">
+<input type="file" accept="audio/*" id="musicaInput">
 
-    <div>
-        <button onclick="play()">▶</button>
-        <button onclick="pause()">⏸</button>
-    </div>
+<audio id="audio"></audio>
+
+<input type="range" id="progresso" value="0">
+
+<div>
+<button onclick="play()">▶</button>
+<button onclick="pause()">⏸</button>
+</div>
 </div>
 
 <script>
+
 const audio = document.getElementById("audio");
 const progresso = document.getElementById("progresso");
 const capa = document.getElementById("capa");
 
-function carregarMusica(event){
-    const file = event.target.files[0];
+function play(){ audio.play(); }
+function pause(){ audio.pause(); }
+
+document.getElementById("musicaInput").addEventListener("change", e=>{
+    const file = e.target.files[0];
     if(file){
         audio.src = URL.createObjectURL(file);
         audio.play();
     }
-}
+});
 
-function play(){
-    audio.play();
-}
-
-function pause(){
-    audio.pause();
-}
-
-audio.addEventListener("timeupdate",()=>{
+audio.addEventListener("timeupdate", ()=>{
     progresso.value = (audio.currentTime / audio.duration) * 100;
 });
 
-progresso.addEventListener("input",()=>{
+progresso.addEventListener("input", ()=>{
     audio.currentTime = (progresso.value / 100) * audio.duration;
 });
 
 function toggleConfig(){
-    const config = document.getElementById("config");
-    config.style.display = config.style.display === "block" ? "none" : "block";
+    const c = document.getElementById("config");
+    c.style.display = c.style.display === "block" ? "none" : "block";
 }
 
-function mudarCor(cor){
-    document.documentElement.style.setProperty('--cor-principal', cor);
-    document.documentElement.style.setProperty('--cor-secundaria', escurecer(cor,30));
+function escurecer(hex,percent){
+    let num=parseInt(hex.slice(1),16),
+    r=(num>>16)-percent,
+    g=((num>>8)&0x00FF)-percent,
+    b=(num&0x0000FF)-percent;
+    r=r<0?0:r;
+    g=g<0?0:g;
+    b=b<0?0:b;
+    return "#"+(b|(g<<8)|(r<<16)).toString(16).padStart(6,"0");
 }
 
-function escurecer(cor,percent){
-    let num = parseInt(cor.slice(1),16),
-    r = (num >> 16) - percent,
-    g = ((num >> 8) & 0x00FF) - percent,
-    b = (num & 0x0000FF) - percent;
+const corPicker = document.getElementById("corPicker");
+corPicker.addEventListener("input",()=>{
+    const cor = corPicker.value;
+    document.documentElement.style.setProperty("--cor1",cor);
+    document.documentElement.style.setProperty("--cor2",escurecer(cor,40));
+    localStorage.setItem("cor",cor);
+});
 
-    r = (r<0)?0:r;
-    g = (g<0)?0:g;
-    b = (b<0)?0:b;
+const fonteSelect = document.getElementById("fonteSelect");
+fonteSelect.addEventListener("change",()=>{
+    document.body.style.fontFamily = fonteSelect.value;
+    localStorage.setItem("fonte",fonteSelect.value);
+});
 
-    return "#" + (b | (g << 8) | (r << 16)).toString(16).padStart(6,"0");
-}
+const mostrarCapa = document.getElementById("mostrarCapa");
+mostrarCapa.addEventListener("change",()=>{
+    capa.style.display = mostrarCapa.value==="sim"?"block":"none";
+    localStorage.setItem("mostrarCapa",mostrarCapa.value);
+});
 
-function mudarFonte(fonte){
-    document.body.style.fontFamily = fonte;
-}
-
-function toggleCapa(valor){
-    capa.style.display = valor === "sim" ? "block" : "none";
-}
-
-function capaPersonalizada(event){
-    const file = event.target.files[0];
+document.getElementById("capaInput").addEventListener("change",e=>{
+    const file = e.target.files[0];
     if(file){
         capa.src = URL.createObjectURL(file);
     }
+});
+
+window.onload = ()=>{
+    if(localStorage.getItem("cor")){
+        corPicker.value = localStorage.getItem("cor");
+        corPicker.dispatchEvent(new Event("input"));
+    }
+    if(localStorage.getItem("fonte")){
+        document.body.style.fontFamily = localStorage.getItem("fonte");
+        fonteSelect.value = localStorage.getItem("fonte");
+    }
+    if(localStorage.getItem("mostrarCapa")){
+        mostrarCapa.value = localStorage.getItem("mostrarCapa");
+        mostrarCapa.dispatchEvent(new Event("change"));
+    }
+};
+
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js");
 }
+
 </script>
 
 </body>
