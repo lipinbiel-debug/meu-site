@@ -1,309 +1,230 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
+<html lang="pt-br" style="--cor1: #42855f; --cor2: #1a5d37;"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Minimal Player</title>
+
+<title>Player Musical</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#6c5ce7">
 
 <style>
 :root{
-  --accent-color:#0071e3;
-  --bg-color:#f2f2f5;
-  --card-color:#ffffff;
-  --text-color:#1d1d1f;
-  --soft-gray:#e5e5ea;
+    --cor1:#6c5ce7;
+    --cor2:#4834d4;
+    --texto:#ffffff;
+    --card:rgba(0,0,0,0.4);
 }
 
-/* LOADING SCREEN */
-#loader{
-  position:fixed;
-  inset:0;
-  background:var(--bg-color);
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  z-index:9999;
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-}
-
-#loadingBar{
-  width:200px;
-  height:6px;
-  background:var(--soft-gray);
-  border-radius:10px;
-  margin-top:20px;
-  overflow:hidden;
-}
-
-#loadingProgress{
-  height:100%;
-  width:0%;
-  background:var(--accent-color);
-  transition:width 0.3s;
-}
-
-/* BASE */
 body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-  background:var(--bg-color);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-  color:var(--text-color);
+    margin:0;
+    font-family: Arial;
+    background: linear-gradient(45deg,var(--cor1),var(--cor2));
+    background-size:400% 400%;
+    animation:fundo 12s infinite alternate;
+    color:var(--texto);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
 }
 
-.player{
-  background:var(--card-color);
-  width:360px;
-  padding:25px;
-  border-radius:25px;
-  box-shadow:0 10px 40px rgba(0,0,0,0.08);
-  text-align:center;
-  position:relative;
-}
-
-.cover{
-  width:100%;
-  height:230px;
-  background:var(--soft-gray);
-  border-radius:20px;
-  margin-bottom:15px;
-  background-size:cover;
-  background-position:center;
-}
-
-button{
-  background:var(--accent-color);
-  border:none;
-  color:white;
-  padding:10px 18px;
-  border-radius:14px;
-  cursor:pointer;
-}
-
-input[type="range"]{
-  width:100%;
-  accent-color:var(--accent-color);
-}
-
-.menu-btn{
-  position:absolute;
-  top:15px;
-  right:15px;
-  font-size:22px;
-  cursor:pointer;
+@keyframes fundo{
+    0%{background-position:left;}
+    100%{background-position:right;}
 }
 
 .menu{
-  position:fixed;
-  right:-100%;
-  top:0;
-  width:300px;
-  height:100%;
-  background:white;
-  box-shadow:-5px 0 20px rgba(0,0,0,0.1);
-  padding:20px;
-  transition:0.4s;
-  overflow-y:auto;
+    position:absolute;
+    top:20px;
+    right:20px;
+    font-size:26px;
+    cursor:pointer;
 }
 
-.menu.active{ right:0; }
-
-.tabs{
-  display:flex;
-  justify-content:space-around;
-  margin-bottom:20px;
+.config{
+    display:none;
+    position:absolute;
+    top:60px;
+    right:20px;
+    width:260px;
+    background:var(--card);
+    padding:15px;
+    border-radius:15px;
+    backdrop-filter:blur(10px);
 }
 
-.tab-btn{
-  padding:8px;
-  cursor:pointer;
-  border-bottom:2px solid transparent;
+.config input,
+.config select{
+    width:100%;
+    margin-bottom:10px;
 }
 
-.tab-btn.active{
-  border-bottom:2px solid var(--accent-color);
+.player{
+    background:var(--card);
+    padding:20px;
+    border-radius:20px;
+    width:320px;
+    text-align:center;
+    backdrop-filter:blur(15px);
 }
 
-.tab{ display:none; }
-.tab.active{ display:block; }
-
-.playlist-item{
-  padding:8px;
-  border-radius:10px;
-  background:var(--soft-gray);
-  margin-bottom:8px;
-  cursor:pointer;
+img{
+    width:150px;
+    height:150px;
+    border-radius:12px;
+    object-fit:cover;
+    margin-bottom:10px;
 }
 
-.playlist-item.active{
-  background:var(--accent-color);
-  color:white;
+button{
+    background:var(--cor1);
+    border:none;
+    color:white;
+    padding:8px 15px;
+    border-radius:8px;
+    cursor:pointer;
+    margin:5px;
 }
+
+input[type="range"]{
+    width:100%;
+}
+
 </style>
 </head>
-<body>
+<body style="font-family: Verdana;">
 
-<!-- LOADING -->
-<div id="loader">
-  <h2>Minimal Player</h2>
-  <div id="loadingBar">
-    <div id="loadingProgress"></div>
-  </div>
-  <p id="loadingText">0%</p>
-</div>
+<div class="menu" onclick="toggleConfig()">☰</div>
 
-<div class="player" style="display:none;" id="app">
+<div class="config" id="config" style="display: none;">
+<h3>Configurações</h3>
 
-<div class="menu-btn" onclick="toggleMenu()">☰</div>
+<label>Cor do Site</label>
+<input type="color" id="corPicker">
 
-<div class="cover" id="cover"></div>
-<h3 id="musicName">Nenhuma música</h3>
+<label>Fonte</label>
+<select id="fonteSelect">
+<option value="Arial">Arial</option>
+<option value="Verdana">Verdana</option>
+<option value="Georgia">Georgia</option>
+<option value="Courier New">Courier</option>
+</select>
 
-<audio id="audio"></audio>
+<label>Mostrar Capa</label>
+<select id="mostrarCapa">
+<option value="sim">Sim</option>
+<option value="nao">Não</option>
+</select>
 
-<button onclick="playMusic()">Play</button>
-<button onclick="pauseMusic()">Pause</button>
-
-<br><br>
-
-<input type="range" id="progress" value="0">
-
-<br><br>
-Volume
-<input type="range" id="volume" min="0" max="1" step="0.01">
+<label>Escolher Sua Própria Capa</label>
+<input type="file" accept="image/*" id="capaInput">
 
 </div>
 
-<!-- MENU -->
-<div class="menu" id="menu">
+<div class="player">
+<img id="capa" src="blob:https://lipinbiel-debug.github.io/5bcb23bb-e90d-48ca-bfd3-6d4d0618ae48" style="display: none;">
 
-<div class="tabs">
-<div class="tab-btn active" onclick="openTab('visual',this)">Visual</div>
-<div class="tab-btn" onclick="openTab('playlist',this)">Playlist</div>
-<div class="tab-btn" onclick="openTab('support',this)">Tutorial</div>
+<input type="file" accept="audio/*" id="musicaInput">
+
+<audio id="audio" src="blob:https://lipinbiel-debug.github.io/a7f68c7d-0c35-4172-9171-66aeb34c2617"></audio>
+
+<input type="range" id="progresso" value="0">
+
+<div>
+<button onclick="play()">▶</button>
+<button onclick="pause()">⏸</button>
 </div>
-
-<div class="tab active" id="visual">
-<h3>Cor de Destaque</h3>
-<input type="color" id="colorPicker">
-<br><br>
-<h3>Adicionar Capa</h3>
-<input type="file" id="coverUpload" accept="image/*">
-</div>
-
-<div class="tab" id="playlist">
-<input type="file" id="musicUpload" accept="audio/*">
-<div id="playlistContainer"></div>
-</div>
-
-<div class="tab" id="support">
-<p>1. Vá em Playlist e adicione músicas</p>
-<p>2. Clique para tocar</p>
-<p>3. Adicione capa em Visual</p>
-<br>
-<a href="mailto:lipinbiel@gmail.com">Suporte por Email</a>
-</div>
-
 </div>
 
 <script>
-/* LOADING REAL */
-let load=0;
-const loader=setInterval(()=>{
-  load+=5;
-  document.getElementById("loadingProgress").style.width=load+"%";
-  document.getElementById("loadingText").innerText=load+"%";
-  if(load>=100){
-    clearInterval(loader);
-    document.getElementById("loader").style.display="none";
-    document.getElementById("app").style.display="block";
-  }
-},50);
 
-/* PLAYER */
-const audio=document.getElementById("audio");
-const progress=document.getElementById("progress");
-const volume=document.getElementById("volume");
-const musicName=document.getElementById("musicName");
-const playlistContainer=document.getElementById("playlistContainer");
-const cover=document.getElementById("cover");
+const audio = document.getElementById("audio");
+const progresso = document.getElementById("progresso");
+const capa = document.getElementById("capa");
 
-let playlist=[];
-let currentIndex=-1;
+function play(){ audio.play(); }
+function pause(){ audio.pause(); }
 
-/* PLAYLIST */
-document.getElementById("musicUpload").addEventListener("change",function(){
-  const file=this.files[0];
-  const url=URL.createObjectURL(file);
-  playlist.push({name:file.name,src:url});
-  renderPlaylist();
+document.getElementById("musicaInput").addEventListener("change", e=>{
+    const file = e.target.files[0];
+    if(file){
+        audio.src = URL.createObjectURL(file);
+        audio.play();
+    }
 });
 
-function renderPlaylist(){
-  playlistContainer.innerHTML="";
-  playlist.forEach((song,index)=>{
-    const div=document.createElement("div");
-    div.className="playlist-item";
-    div.innerText=song.name;
-    div.onclick=()=>loadMusic(index);
-    if(index===currentIndex) div.classList.add("active");
-    playlistContainer.appendChild(div);
-  });
+audio.addEventListener("timeupdate", ()=>{
+    progresso.value = (audio.currentTime / audio.duration) * 100;
+});
+
+progresso.addEventListener("input", ()=>{
+    audio.currentTime = (progresso.value / 100) * audio.duration;
+});
+
+function toggleConfig(){
+    const c = document.getElementById("config");
+    c.style.display = c.style.display === "block" ? "none" : "block";
 }
 
-function loadMusic(index){
-  currentIndex=index;
-  audio.src=playlist[index].src;
-  musicName.innerText=playlist[index].name;
-  renderPlaylist();
-  audio.play();
+function escurecer(hex,percent){
+    let num=parseInt(hex.slice(1),16),
+    r=(num>>16)-percent,
+    g=((num>>8)&0x00FF)-percent,
+    b=(num&0x0000FF)-percent;
+    r=r<0?0:r;
+    g=g<0?0:g;
+    b=b<0?0:b;
+    return "#"+(b|(g<<8)|(r<<16)).toString(16).padStart(6,"0");
 }
 
-function playMusic(){audio.play();}
-function pauseMusic(){audio.pause();}
-
-/* PROGRESS */
-audio.addEventListener("timeupdate",()=>{
-  progress.value=(audio.currentTime/audio.duration)*100||0;
+const corPicker = document.getElementById("corPicker");
+corPicker.addEventListener("input",()=>{
+    const cor = corPicker.value;
+    document.documentElement.style.setProperty("--cor1",cor);
+    document.documentElement.style.setProperty("--cor2",escurecer(cor,40));
+    localStorage.setItem("cor",cor);
 });
 
-progress.addEventListener("input",()=>{
-  audio.currentTime=(progress.value/100)*audio.duration;
+const fonteSelect = document.getElementById("fonteSelect");
+fonteSelect.addEventListener("change",()=>{
+    document.body.style.fontFamily = fonteSelect.value;
+    localStorage.setItem("fonte",fonteSelect.value);
 });
 
-/* VOLUME */
-volume.addEventListener("input",()=>{
-  audio.volume=volume.value;
+const mostrarCapa = document.getElementById("mostrarCapa");
+mostrarCapa.addEventListener("change",()=>{
+    capa.style.display = mostrarCapa.value==="sim"?"block":"none";
+    localStorage.setItem("mostrarCapa",mostrarCapa.value);
 });
 
-/* CAPA */
-document.getElementById("coverUpload").addEventListener("change",function(){
-  const file=this.files[0];
-  cover.style.backgroundImage=`url(${URL.createObjectURL(file)})`;
+document.getElementById("capaInput").addEventListener("change",e=>{
+    const file = e.target.files[0];
+    if(file){
+        capa.src = URL.createObjectURL(file);
+    }
 });
 
-/* COR GLOBAL */
-const colorPicker=document.getElementById("colorPicker");
-colorPicker.addEventListener("input",()=>{
-  document.documentElement.style.setProperty("--accent-color",colorPicker.value);
-});
+window.onload = ()=>{
+    if(localStorage.getItem("cor")){
+        corPicker.value = localStorage.getItem("cor");
+        corPicker.dispatchEvent(new Event("input"));
+    }
+    if(localStorage.getItem("fonte")){
+        document.body.style.fontFamily = localStorage.getItem("fonte");
+        fonteSelect.value = localStorage.getItem("fonte");
+    }
+    if(localStorage.getItem("mostrarCapa")){
+        mostrarCapa.value = localStorage.getItem("mostrarCapa");
+        mostrarCapa.dispatchEvent(new Event("change"));
+    }
+};
 
-/* MENU */
-function toggleMenu(){
-  document.getElementById("menu").classList.toggle("active");
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js");
 }
 
-function openTab(id,el){
-  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-  el.classList.add("active");
-}
 </script>
 
-</body>
-</html>
+
+
+</body></html>
