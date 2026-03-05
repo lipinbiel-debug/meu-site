@@ -3,69 +3,76 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Music App</title>
+<title>Minimal Player</title>
 
 <style>
 :root{
   --accent-color:#0071e3;
-  --fixed-gray:#f2f2f2;
+  --bg-color:#f2f2f5;
+  --card-color:#ffffff;
+  --text-color:#1d1d1f;
+  --soft-gray:#e5e5ea;
 }
 
-body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial;
-  background:var(--fixed-gray);
-  color:#111;
-}
-
-/* Tela de carregamento */
+/* LOADING SCREEN */
 #loader{
   position:fixed;
   inset:0;
-  background:white;
+  background:var(--bg-color);
   display:flex;
   flex-direction:column;
-  align-items:center;
   justify-content:center;
+  align-items:center;
   z-index:9999;
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
 }
 
-#progress-bar{
+#loadingBar{
   width:200px;
   height:6px;
-  background:#ddd;
+  background:var(--soft-gray);
   border-radius:10px;
-  overflow:hidden;
   margin-top:20px;
+  overflow:hidden;
 }
 
-#progress{
+#loadingProgress{
   height:100%;
   width:0%;
   background:var(--accent-color);
+  transition:width 0.3s;
 }
 
-#percent{
-  margin-top:10px;
-  font-size:14px;
+/* BASE */
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+  background:var(--bg-color);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  color:var(--text-color);
 }
 
-/* Player */
 .player{
+  background:var(--card-color);
+  width:360px;
+  padding:25px;
+  border-radius:25px;
+  box-shadow:0 10px 40px rgba(0,0,0,0.08);
   text-align:center;
-  padding:40px 20px;
+  position:relative;
 }
 
 .cover{
-  width:220px;
-  height:220px;
-  object-fit:cover;
+  width:100%;
+  height:230px;
+  background:var(--soft-gray);
   border-radius:20px;
-  background:#ccc;
-}
-
-.controls{
-  margin-top:20px;
+  margin-bottom:15px;
+  background-size:cover;
+  background-position:center;
 }
 
 button{
@@ -73,203 +80,229 @@ button{
   border:none;
   color:white;
   padding:10px 18px;
-  border-radius:20px;
+  border-radius:14px;
   cursor:pointer;
-  margin:5px;
 }
 
 input[type="range"]{
-  width:200px;
+  width:100%;
+  accent-color:var(--accent-color);
+}
+
+.menu-btn{
+  position:absolute;
+  top:15px;
+  right:15px;
+  font-size:22px;
+  cursor:pointer;
 }
 
 .menu{
   position:fixed;
-  top:20px;
-  left:20px;
-  cursor:pointer;
-  font-size:24px;
-}
-
-/* Menu */
-#menuPanel{
-  position:fixed;
+  right:-100%;
   top:0;
-  left:-300px;
-  width:280px;
+  width:300px;
   height:100%;
   background:white;
-  box-shadow:2px 0 10px rgba(0,0,0,0.1);
+  box-shadow:-5px 0 20px rgba(0,0,0,0.1);
   padding:20px;
-  transition:0.3s;
-  overflow:auto;
+  transition:0.4s;
+  overflow-y:auto;
 }
 
-#menuPanel.open{
-  left:0;
+.menu.active{ right:0; }
+
+.tabs{
+  display:flex;
+  justify-content:space-around;
+  margin-bottom:20px;
 }
 
-.tab{
-  margin-top:20px;
+.tab-btn{
+  padding:8px;
+  cursor:pointer;
+  border-bottom:2px solid transparent;
 }
+
+.tab-btn.active{
+  border-bottom:2px solid var(--accent-color);
+}
+
+.tab{ display:none; }
+.tab.active{ display:block; }
 
 .playlist-item{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin:10px 0;
+  padding:8px;
+  border-radius:10px;
+  background:var(--soft-gray);
+  margin-bottom:8px;
+  cursor:pointer;
 }
 
-.playlist-cover{
-  width:40px;
-  height:40px;
-  border-radius:8px;
-  margin-right:10px;
-  object-fit:cover;
+.playlist-item.active{
+  background:var(--accent-color);
+  color:white;
 }
 </style>
 </head>
-
 <body>
 
-<!-- LOADER -->
+<!-- LOADING -->
 <div id="loader">
-  <h2>Music App</h2>
-  <div id="progress-bar">
-    <div id="progress"></div>
+  <h2>Minimal Player</h2>
+  <div id="loadingBar">
+    <div id="loadingProgress"></div>
   </div>
-  <div id="percent">0%</div>
+  <p id="loadingText">0%</p>
 </div>
 
-<div class="menu" onclick="toggleMenu()">☰</div>
+<div class="player" style="display:none;" id="app">
 
-<div id="menuPanel">
-  <h3>Configurações</h3>
+<div class="menu-btn" onclick="toggleMenu()">☰</div>
 
-  <div class="tab">
-    <h4>Visual</h4>
-    <input type="color" id="colorPicker">
-  </div>
+<div class="cover" id="cover"></div>
+<h3 id="musicName">Nenhuma música</h3>
 
-  <div class="tab">
-    <h4>Playlist</h4>
-    <div id="playlist-list"></div>
-  </div>
+<audio id="audio"></audio>
 
-  <div class="tab">
-    <h4>Tutorial + Suporte</h4>
-    <p>Para suporte envie email para:</p>
-    <a href="mailto:lipinbiel@gmail.com">lipinbiel@gmail.com</a>
-    <p>Use o menu para adicionar músicas e tocar normalmente.</p>
-  </div>
+<button onclick="playMusic()">Play</button>
+<button onclick="pauseMusic()">Pause</button>
+
+<br><br>
+
+<input type="range" id="progress" value="0">
+
+<br><br>
+Volume
+<input type="range" id="volume" min="0" max="1" step="0.01">
+
 </div>
 
-<div class="player">
-  <img id="cover" class="cover" src="">
-  <audio id="audio"></audio>
+<!-- MENU -->
+<div class="menu" id="menu">
 
-  <div class="controls">
-    <button onclick="playPause()">Play/Pause</button><br>
-    Volume<br>
-    <input type="range" min="0" max="1" step="0.01" id="volume">
-  </div>
+<div class="tabs">
+<div class="tab-btn active" onclick="openTab('visual',this)">Visual</div>
+<div class="tab-btn" onclick="openTab('playlist',this)">Playlist</div>
+<div class="tab-btn" onclick="openTab('support',this)">Tutorial</div>
+</div>
+
+<div class="tab active" id="visual">
+<h3>Cor de Destaque</h3>
+<input type="color" id="colorPicker">
+<br><br>
+<h3>Adicionar Capa</h3>
+<input type="file" id="coverUpload" accept="image/*">
+</div>
+
+<div class="tab" id="playlist">
+<input type="file" id="musicUpload" accept="audio/*">
+<div id="playlistContainer"></div>
+</div>
+
+<div class="tab" id="support">
+<p>1. Vá em Playlist e adicione músicas</p>
+<p>2. Clique para tocar</p>
+<p>3. Adicione capa em Visual</p>
+<br>
+<a href="mailto:lipinbiel@gmail.com">Suporte por Email</a>
+</div>
+
 </div>
 
 <script>
-// LOADER
-let percent = 0;
-let interval = setInterval(()=>{
-  percent++;
-  document.getElementById("progress").style.width = percent + "%";
-  document.getElementById("percent").innerText = percent + "%";
-  if(percent >= 100){
-    clearInterval(interval);
+/* LOADING REAL */
+let load=0;
+const loader=setInterval(()=>{
+  load+=5;
+  document.getElementById("loadingProgress").style.width=load+"%";
+  document.getElementById("loadingText").innerText=load+"%";
+  if(load>=100){
+    clearInterval(loader);
     document.getElementById("loader").style.display="none";
+    document.getElementById("app").style.display="block";
   }
-},15);
+},50);
 
-// MENU
-function toggleMenu(){
-  document.getElementById("menuPanel").classList.toggle("open");
-}
+/* PLAYER */
+const audio=document.getElementById("audio");
+const progress=document.getElementById("progress");
+const volume=document.getElementById("volume");
+const musicName=document.getElementById("musicName");
+const playlistContainer=document.getElementById("playlistContainer");
+const cover=document.getElementById("cover");
 
-// PLAYER
-const audio = document.getElementById("audio");
-const cover = document.getElementById("cover");
-const volume = document.getElementById("volume");
+let playlist=[];
+let currentIndex=-1;
 
-volume.addEventListener("input",()=>{
-  audio.volume = volume.value;
+/* PLAYLIST */
+document.getElementById("musicUpload").addEventListener("change",function(){
+  const file=this.files[0];
+  const url=URL.createObjectURL(file);
+  playlist.push({name:file.name,src:url});
+  renderPlaylist();
 });
 
-function playPause(){
-  if(audio.paused){
-    audio.play();
-  }else{
-    audio.pause();
-  }
-}
-
-function tocarMusica(url,capa){
-  audio.src = url;
-  cover.src = capa;
-  audio.play();
-}
-
-// COR GLOBAL
-const colorPicker = document.getElementById("colorPicker");
-colorPicker.addEventListener("input",(e)=>{
-  document.documentElement.style.setProperty("--accent-color", e.target.value);
-  localStorage.setItem("accentColor", e.target.value);
-});
-
-const savedColor = localStorage.getItem("accentColor");
-if(savedColor){
-  document.documentElement.style.setProperty("--accent-color", savedColor);
-  colorPicker.value = savedColor;
-}
-
-/* =========================
-   PLAYLIST SALVANDO NO CELULAR
-   ========================= */
-
-let playlist = JSON.parse(localStorage.getItem("playlist")) || [];
-
-function salvarPlaylist(){
-  localStorage.setItem("playlist", JSON.stringify(playlist));
-}
-
-function adicionarMusica(nome,url,capa){
-  playlist.push({nome,url,capa});
-  salvarPlaylist();
-  renderizarPlaylist();
-}
-
-function removerMusica(index){
-  playlist.splice(index,1);
-  salvarPlaylist();
-  renderizarPlaylist();
-}
-
-function renderizarPlaylist(){
-  const lista = document.getElementById("playlist-list");
-  lista.innerHTML="";
-
-  playlist.forEach((musica,index)=>{
-    const item = document.createElement("div");
-    item.className="playlist-item";
-    item.innerHTML=`
-      <div style="display:flex;align-items:center;">
-        <img src="${musica.capa}" class="playlist-cover">
-        <span>${musica.nome}</span>
-      </div>
-      <button onclick="removerMusica(${index})">✕</button>
-    `;
-    item.onclick=()=>tocarMusica(musica.url,musica.capa);
-    lista.appendChild(item);
+function renderPlaylist(){
+  playlistContainer.innerHTML="";
+  playlist.forEach((song,index)=>{
+    const div=document.createElement("div");
+    div.className="playlist-item";
+    div.innerText=song.name;
+    div.onclick=()=>loadMusic(index);
+    if(index===currentIndex) div.classList.add("active");
+    playlistContainer.appendChild(div);
   });
 }
 
-window.addEventListener("load", renderizarPlaylist);
+function loadMusic(index){
+  currentIndex=index;
+  audio.src=playlist[index].src;
+  musicName.innerText=playlist[index].name;
+  renderPlaylist();
+  audio.play();
+}
+
+function playMusic(){audio.play();}
+function pauseMusic(){audio.pause();}
+
+/* PROGRESS */
+audio.addEventListener("timeupdate",()=>{
+  progress.value=(audio.currentTime/audio.duration)*100||0;
+});
+
+progress.addEventListener("input",()=>{
+  audio.currentTime=(progress.value/100)*audio.duration;
+});
+
+/* VOLUME */
+volume.addEventListener("input",()=>{
+  audio.volume=volume.value;
+});
+
+/* CAPA */
+document.getElementById("coverUpload").addEventListener("change",function(){
+  const file=this.files[0];
+  cover.style.backgroundImage=`url(${URL.createObjectURL(file)})`;
+});
+
+/* COR GLOBAL */
+const colorPicker=document.getElementById("colorPicker");
+colorPicker.addEventListener("input",()=>{
+  document.documentElement.style.setProperty("--accent-color",colorPicker.value);
+});
+
+/* MENU */
+function toggleMenu(){
+  document.getElementById("menu").classList.toggle("active");
+}
+
+function openTab(id,el){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  el.classList.add("active");
+}
 </script>
 
 </body>
