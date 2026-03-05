@@ -1,332 +1,275 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Meu Player</title>
+<title>Music App</title>
 
 <style>
 :root{
-  --cor-principal:#6c63ff;
-  --cor-fundo:#111;
-  --cor-texto:#ffffff;
-  --fonte:'Arial';
+  --accent-color:#0071e3;
+  --fixed-gray:#f2f2f2;
 }
 
 body{
   margin:0;
-  background:var(--cor-fundo);
-  color:var(--cor-texto);
-  font-family:var(--fonte);
-  transition:0.4s;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial;
+  background:var(--fixed-gray);
+  color:#111;
 }
 
-/* LOADING */
-
+/* Tela de carregamento */
 #loader{
   position:fixed;
-  width:100%;
-  height:100vh;
-  background:#111;
+  inset:0;
+  background:white;
   display:flex;
-  justify-content:center;
-  align-items:center;
   flex-direction:column;
+  align-items:center;
+  justify-content:center;
   z-index:9999;
 }
 
-#logoApp{
-  width:150px;
-  border-radius:20px;
-  margin-bottom:20px;
-}
-
-.barra{
-  width:250px;
-  height:15px;
-  background:#333;
-  border-radius:20px;
+#progress-bar{
+  width:200px;
+  height:6px;
+  background:#ddd;
+  border-radius:10px;
   overflow:hidden;
+  margin-top:20px;
 }
 
-.progresso{
+#progress{
   height:100%;
   width:0%;
-  background:var(--cor-principal);
-  transition:0.2s;
+  background:var(--accent-color);
 }
 
-#porcentagem{
+#percent{
   margin-top:10px;
-  font-weight:bold;
+  font-size:14px;
 }
 
-/* HEADER */
-
-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:15px;
-  background:var(--cor-principal);
-}
-
-.menu-btn{
-  font-size:26px;
-  cursor:pointer;
-}
-
-/* CONTAINER */
-
-.container{
+/* Player */
+.player{
   text-align:center;
-  padding:20px;
+  padding:40px 20px;
 }
 
-img.capa{
-  width:200px;
-  height:200px;
+.cover{
+  width:220px;
+  height:220px;
   object-fit:cover;
-  border-radius:15px;
-  margin:20px 0;
+  border-radius:20px;
+  background:#ccc;
 }
 
-input, select, button{
-  margin:10px;
-  padding:8px;
-  border-radius:8px;
-  border:none;
+.controls{
+  margin-top:20px;
 }
 
 button{
-  background:var(--cor-principal);
+  background:var(--accent-color);
+  border:none;
   color:white;
+  padding:10px 18px;
+  border-radius:20px;
   cursor:pointer;
+  margin:5px;
 }
 
-/* MENU LATERAL */
+input[type="range"]{
+  width:200px;
+}
 
-#menu{
+.menu{
   position:fixed;
-  right:-350px;
+  top:20px;
+  left:20px;
+  cursor:pointer;
+  font-size:24px;
+}
+
+/* Menu */
+#menuPanel{
+  position:fixed;
   top:0;
-  width:350px;
+  left:-300px;
+  width:280px;
   height:100%;
-  background:#222;
+  background:white;
+  box-shadow:2px 0 10px rgba(0,0,0,0.1);
   padding:20px;
-  transition:0.4s;
-  overflow-y:auto;
+  transition:0.3s;
+  overflow:auto;
 }
 
-#menu.ativo{
-  right:0;
+#menuPanel.open{
+  left:0;
 }
 
-.abas button{
-  width:100%;
-  margin:5px 0;
+.tab{
+  margin-top:20px;
 }
 
-.aba-conteudo{
-  display:none;
+.playlist-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin:10px 0;
 }
 
-.ativo-aba{
-  display:block;
-}
-
-ul{
-  list-style:none;
-  padding:0;
+.playlist-cover{
+  width:40px;
+  height:40px;
+  border-radius:8px;
+  margin-right:10px;
+  object-fit:cover;
 }
 </style>
 </head>
+
 <body>
 
-<!-- LOADING -->
+<!-- LOADER -->
 <div id="loader">
-  <img src="https://via.placeholder.com/150" id="logoApp">
-  <div class="barra">
-    <div class="progresso"></div>
+  <h2>Music App</h2>
+  <div id="progress-bar">
+    <div id="progress"></div>
   </div>
-  <p id="porcentagem">0%</p>
+  <div id="percent">0%</div>
 </div>
 
-<header>
-<h2>🎵 Meu Player</h2>
-<div class="menu-btn" onclick="abrirMenu()">☰</div>
-</header>
+<div class="menu" onclick="toggleMenu()">☰</div>
 
-<div class="container">
+<div id="menuPanel">
+  <h3>Configurações</h3>
 
-<input type="file" id="audioInput" accept="audio/*"><br>
+  <div class="tab">
+    <h4>Visual</h4>
+    <input type="color" id="colorPicker">
+  </div>
 
-<img src="https://via.placeholder.com/200" class="capa" id="capa">
+  <div class="tab">
+    <h4>Playlist</h4>
+    <div id="playlist-list"></div>
+  </div>
 
-<audio id="player" controls></audio><br>
-
-<label>🔊 Volume</label>
-<input type="range" min="0" max="1" step="0.01" id="volume">
-
+  <div class="tab">
+    <h4>Tutorial + Suporte</h4>
+    <p>Para suporte envie email para:</p>
+    <a href="mailto:lipinbiel@gmail.com">lipinbiel@gmail.com</a>
+    <p>Use o menu para adicionar músicas e tocar normalmente.</p>
+  </div>
 </div>
 
-<!-- MENU CONFIG -->
-<div id="menu">
+<div class="player">
+  <img id="cover" class="cover" src="">
+  <audio id="audio"></audio>
 
-<h2>⚙ Configurações</h2>
-
-<div class="abas">
-<button onclick="trocarAba('visual')">🎨 Visual</button>
-<button onclick="trocarAba('playlist')">🎵 Playlist</button>
-<button onclick="trocarAba('tutorial')">📖 Tutorial + Suporte</button>
-</div>
-
-<!-- VISUAL -->
-<div id="visual" class="aba-conteudo ativo-aba">
-
-<h3>Cor Principal</h3>
-<input type="color" id="corPicker">
-
-<h3>Fonte</h3>
-<select id="fonteSelect">
-<option value="Arial">Arial</option>
-<option value="Verdana">Verdana</option>
-<option value="Courier New">Courier</option>
-<option value="Georgia">Georgia</option>
-</select>
-
-<h3>Capa Personalizada</h3>
-<input type="file" id="capaUpload" accept="image/*">
-
-</div>
-
-<!-- PLAYLIST -->
-<div id="playlist" class="aba-conteudo">
-
-<h3>Adicionar Música</h3>
-<input type="text" id="nomeMusica" placeholder="Nome da música">
-<input type="file" id="musicaPlaylist" accept="audio/*">
-<button onclick="adicionarPlaylist()">Adicionar</button>
-
-<h3>Suas Músicas</h3>
-<ul id="listaPlaylist"></ul>
-
-</div>
-
-<!-- TUTORIAL -->
-<div id="tutorial" class="aba-conteudo">
-
-<h3>📖 Como usar</h3>
-<p>
-1️⃣ Escolha uma música.<br>
-2️⃣ Ajuste o volume.<br>
-3️⃣ Personalize no Visual.<br>
-4️⃣ Crie sua playlist.<br>
-</p>
-
-<h3>📧 Suporte</h3>
-<a href="mailto:lipinbiel@gmail.com">
-<button>Entrar em Contato</button>
-</a>
-
-</div>
-
+  <div class="controls">
+    <button onclick="playPause()">Play/Pause</button><br>
+    Volume<br>
+    <input type="range" min="0" max="1" step="0.01" id="volume">
+  </div>
 </div>
 
 <script>
-
-/* LOADING */
-let progresso = 0;
-const barra = document.querySelector(".progresso");
-const porcentagem = document.getElementById("porcentagem");
-const loader = document.getElementById("loader");
-
-function carregar(){
-  if(progresso < 100){
-    progresso++;
-    barra.style.width = progresso + "%";
-    porcentagem.innerText = progresso + "%";
-    setTimeout(carregar, 15);
-  } else {
-    loader.style.opacity="0";
-    setTimeout(()=> loader.style.display="none",500);
+// LOADER
+let percent = 0;
+let interval = setInterval(()=>{
+  percent++;
+  document.getElementById("progress").style.width = percent + "%";
+  document.getElementById("percent").innerText = percent + "%";
+  if(percent >= 100){
+    clearInterval(interval);
+    document.getElementById("loader").style.display="none";
   }
+},15);
+
+// MENU
+function toggleMenu(){
+  document.getElementById("menuPanel").classList.toggle("open");
 }
-window.addEventListener("load", carregar);
 
-/* PLAYER */
-const player = document.getElementById("player");
-const audioInput = document.getElementById("audioInput");
+// PLAYER
+const audio = document.getElementById("audio");
+const cover = document.getElementById("cover");
 const volume = document.getElementById("volume");
-const capa = document.getElementById("capa");
-const corPicker = document.getElementById("corPicker");
-const fonteSelect = document.getElementById("fonteSelect");
-const capaUpload = document.getElementById("capaUpload");
-const listaPlaylist = document.getElementById("listaPlaylist");
-
-audioInput.addEventListener("change", e=>{
-  const file = e.target.files[0];
-  if(file){
-    player.src = URL.createObjectURL(file);
-    player.play();
-  }
-});
 
 volume.addEventListener("input",()=>{
-  player.volume = volume.value;
+  audio.volume = volume.value;
 });
 
-corPicker.addEventListener("input",()=>{
-  document.documentElement.style.setProperty('--cor-principal', corPicker.value);
-});
-
-fonteSelect.addEventListener("change",()=>{
-  document.documentElement.style.setProperty('--fonte', fonteSelect.value);
-});
-
-capaUpload.addEventListener("change", e=>{
-  const file = e.target.files[0];
-  if(file){
-    capa.src = URL.createObjectURL(file);
+function playPause(){
+  if(audio.paused){
+    audio.play();
+  }else{
+    audio.pause();
   }
+}
+
+function tocarMusica(url,capa){
+  audio.src = url;
+  cover.src = capa;
+  audio.play();
+}
+
+// COR GLOBAL
+const colorPicker = document.getElementById("colorPicker");
+colorPicker.addEventListener("input",(e)=>{
+  document.documentElement.style.setProperty("--accent-color", e.target.value);
+  localStorage.setItem("accentColor", e.target.value);
 });
 
-/* MENU */
-function abrirMenu(){
-  document.getElementById("menu").classList.toggle("ativo");
+const savedColor = localStorage.getItem("accentColor");
+if(savedColor){
+  document.documentElement.style.setProperty("--accent-color", savedColor);
+  colorPicker.value = savedColor;
 }
 
-function trocarAba(nome){
-  document.querySelectorAll(".aba-conteudo").forEach(a=>a.classList.remove("ativo-aba"));
-  document.getElementById(nome).classList.add("ativo-aba");
+/* =========================
+   PLAYLIST SALVANDO NO CELULAR
+   ========================= */
+
+let playlist = JSON.parse(localStorage.getItem("playlist")) || [];
+
+function salvarPlaylist(){
+  localStorage.setItem("playlist", JSON.stringify(playlist));
 }
 
-/* PLAYLIST */
-function adicionarPlaylist(){
-  const nome = document.getElementById("nomeMusica").value;
-  const file = document.getElementById("musicaPlaylist").files[0];
+function adicionarMusica(nome,url,capa){
+  playlist.push({nome,url,capa});
+  salvarPlaylist();
+  renderizarPlaylist();
+}
 
-  if(nome && file){
-    const src = URL.createObjectURL(file);
-    const li = document.createElement("li");
-    li.innerHTML = `
-      ${nome}
-      <button onclick="tocar('${src}')">▶</button>
+function removerMusica(index){
+  playlist.splice(index,1);
+  salvarPlaylist();
+  renderizarPlaylist();
+}
+
+function renderizarPlaylist(){
+  const lista = document.getElementById("playlist-list");
+  lista.innerHTML="";
+
+  playlist.forEach((musica,index)=>{
+    const item = document.createElement("div");
+    item.className="playlist-item";
+    item.innerHTML=`
+      <div style="display:flex;align-items:center;">
+        <img src="${musica.capa}" class="playlist-cover">
+        <span>${musica.nome}</span>
+      </div>
+      <button onclick="removerMusica(${index})">✕</button>
     `;
-    listaPlaylist.appendChild(li);
-    localStorage.setItem("playlist", listaPlaylist.innerHTML);
-  }
+    item.onclick=()=>tocarMusica(musica.url,musica.capa);
+    lista.appendChild(item);
+  });
 }
 
-function tocar(src){
-  player.src = src;
-  player.play();
-}
-
-window.onload = function(){
-  listaPlaylist.innerHTML = localStorage.getItem("playlist") || "";
-};
-
+window.addEventListener("load", renderizarPlaylist);
 </script>
 
 </body>
